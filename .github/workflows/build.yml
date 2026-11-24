@@ -24,17 +24,18 @@ jobs:
         with:
           gradle-version: '8.9'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          cmdline-tools-version: '15859902'
-          accept-android-sdk-licenses: true
-
-      - name: Install Android SDK
-        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Install Android SDK packages
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses
+          yes | "$SDKMANAGER" "platforms;android-35" "build-tools;35.0.0"
 
       - name: Extract project
-        run: unzip ProCamera_Android_Project.zip -d work
+        run: |
+          mkdir -p work
+          ZIP_FILE=$(find . -maxdepth 1 -name '*.zip' | head -n 1)
+          test -n "$ZIP_FILE"
+          unzip "$ZIP_FILE" -d work
 
       - name: Build APK
         run: gradle -p work/ProCamera assembleDebug --no-daemon
